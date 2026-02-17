@@ -1,0 +1,9 @@
+[package]
+name = "crowny-sdk"
+version = "1.0.0"
+edition = "2021"
+description = "Crowny 균형3진 플랫폼 Rust SDK"
+authors = ["KPS (Han Seon)"]
+license = "MIT"
+repository = "https://github.com/kimpresidentsk-dev/crowny-tvm"
+keywords = ["crowny", "ternary", "trit", "balanced-ternary"]

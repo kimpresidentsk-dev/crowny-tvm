@@ -1,0 +1,211 @@
+name: Crowny CI/CD
+
+on:
+  push:
+    branches: [main, develop]
+    tags: ['v*']
+  pull_request:
+    branches: [main]
+
+env:
+  CARGO_TERM_COLOR: always
+  RUST_BACKTRACE: 1
+
+jobs:
+  # ════════════════════════════════════════
+  # 1. 빌드 & 테스트 (Linux + macOS)
+  # ════════════════════════════════════════
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Rust 설치
+        uses: dtolnay/rust-toolchain@stable
+
+      - name: 캐시
+        uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            ~/.cargo/git
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: 빌드
+        run: cargo build --release
+
+      - name: 테스트
+        run: cargo test --release -- --nocapture
+
+      - name: 바이너리 업로드
+        uses: actions/upload-artifact@v4
+        with:
+          name: crowni-tvm-${{ matrix.os }}
+          path: target/release/crowni-tvm
+
+  # ════════════════════════════════════════
+  # 2. Trit 통합 테스트
+  # ════════════════════════════════════════
+  trit-integration:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: actions/cache@v4
+        with:
+          path: |
+            ~/.cargo/registry
+            target
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: 빌드
+        run: cargo build --release
+
+      - name: TVM 데모
+        run: ./target/release/crowni-tvm demo
+
+      - name: CAR 데모
+        run: ./target/release/crowni-tvm car
+
+      - name: 729 섹터 검증
+        run: ./target/release/crowni-tvm sectors
+
+      - name: 한선어 컴파일러 데모
+        run: ./target/release/crowni-tvm hanseon
+
+      - name: 웹서버 데모
+        run: ./target/release/crowni-tvm server
+
+      - name: LLM 호출기 데모
+        run: ./target/release/crowni-tvm llm
+
+      - name: 바이트코드 검증
+        run: |
+          echo '넣어 42
+          넣어 58
+          더해
+          종료' > /tmp/test.hsn
+          ./target/release/crowni-tvm bytecode /tmp/test.hsn /tmp/test.크라운
+          echo "✓ 바이트코드 생성 성공"
+
+      - name: WASM 컴파일 검증
+        run: |
+          echo '넣어 100
+          종료' > /tmp/wasm_test.hsn
+          ./target/release/crowni-tvm compile /tmp/wasm_test.hsn /tmp/test.wasm
+          echo "✓ WASM 컴파일 성공"
+
+      - name: 전체 통합 테스트
+        run: ./target/release/crowni-tvm all
+
+  # ════════════════════════════════════════
+  # 3. 코드 품질
+  # ════════════════════════════════════════
+  quality:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy, rustfmt
+
+      - name: 포맷 검사
+        run: cargo fmt --check
+
+      - name: Clippy 린트
+        run: cargo clippy --release -- -W warnings
+
+      - name: 코드 통계
+        run: |
+          echo "═══ 모듈별 코드량 ═══"
+          for f in src/*.rs; do
+            lines=$(wc -l < "$f")
+            printf "  %5d  %s\n" "$lines" "$(basename $f)"
+          done | sort -rn
+          echo ""
+          echo "총 라인: $(wc -l src/*.rs | tail -1 | awk '{print $1}')"
+          echo "총 모듈: $(ls src/*.rs | wc -l)"
+          echo "총 테스트: $(cargo test --release 2>&1 | grep 'test result' | grep -o '[0-9]* passed' | head -1)"
+
+  # ════════════════════════════════════════
+  # 4. WASM 빌드 (브라우저 노드용)
+  # ════════════════════════════════════════
+  wasm-build:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: wasm32-unknown-unknown
+
+      - name: wasm-pack 설치
+        run: curl https://rustwasm.github.io/wasm-pack/installer/init.sh -sSf | sh
+
+      - name: WASM 빌드
+        run: |
+          # 향후 wasm-pack build 지원 시
+          echo "WASM 타겟 빌드 준비 완료"
+          echo "현재는 TVM→WASM 크로스 컴파일만 지원"
+
+  # ════════════════════════════════════════
+  # 5. 릴리즈
+  # ════════════════════════════════════════
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [build, trit-integration, quality]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Linux 바이너리 다운로드
+        uses: actions/download-artifact@v4
+        with:
+          name: crowni-tvm-ubuntu-latest
+          path: release/linux/
+
+      - name: macOS 바이너리 다운로드
+        uses: actions/download-artifact@v4
+        with:
+          name: crowni-tvm-macos-latest
+          path: release/macos/
+
+      - name: 릴리즈 패키지
+        run: |
+          cd release
+          chmod +x linux/crowni-tvm macos/crowni-tvm
+          tar -czf crowni-tvm-linux-x64.tar.gz -C linux crowni-tvm
+          tar -czf crowni-tvm-macos-arm64.tar.gz -C macos crowni-tvm
+          echo "✓ 릴리즈 패키지 생성"
+
+      - name: GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: |
+            release/crowni-tvm-linux-x64.tar.gz
+            release/crowni-tvm-macos-arm64.tar.gz
+          body: |
+            ## CROWNIN TVM ${{ github.ref_name }}
+
+            균형3진 Meta-Kernel + 한선어 컴파일러
+
+            ### 설치
+            ```bash
+            tar -xzf crowni-tvm-*.tar.gz
+            chmod +x crowni-tvm
+            ./crowni-tvm help
+            ```
+
+            ### 변경사항
+            - Canon v1.0 스펙 동결
+            - 729 전체 Opcode 등록
+            - 한선어 컴파일러 v0.1
+            - CPM 패키지 매니저
+            - Trit 디버거/테스트/영속화/로깅
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

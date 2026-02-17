@@ -1,0 +1,161 @@
+{
+  "$schema": "https://raw.githubusercontent.com/martinring/tmlanguage/master/tmlanguage.json",
+  "name": "Crowny",
+  "scopeName": "source.crowny",
+  "patterns": [
+    { "include": "#comments" },
+    { "include": "#strings" },
+    { "include": "#numbers" },
+    { "include": "#trit-literals" },
+    { "include": "#keywords-kr" },
+    { "include": "#keywords-en" },
+    { "include": "#operators" },
+    { "include": "#builtins" },
+    { "include": "#functions" },
+    { "include": "#variables" }
+  ],
+  "repository": {
+    "comments": {
+      "patterns": [
+        {
+          "name": "comment.line.semicolon.crowny",
+          "match": ";.*$"
+        },
+        {
+          "name": "comment.line.hash.crowny",
+          "match": "#.*$"
+        },
+        {
+          "name": "comment.line.double-slash.crowny",
+          "match": "//.*$"
+        }
+      ]
+    },
+    "strings": {
+      "patterns": [
+        {
+          "name": "string.quoted.double.crowny",
+          "begin": "\"",
+          "end": "\"",
+          "patterns": [
+            {
+              "name": "constant.character.escape.crowny",
+              "match": "\\\\."
+            }
+          ]
+        },
+        {
+          "name": "string.quoted.single.crowny",
+          "begin": "'",
+          "end": "'",
+          "patterns": [
+            {
+              "name": "constant.character.escape.crowny",
+              "match": "\\\\."
+            }
+          ]
+        }
+      ]
+    },
+    "numbers": {
+      "patterns": [
+        {
+          "name": "constant.numeric.float.crowny",
+          "match": "-?\\b[0-9]+\\.[0-9]+\\b"
+        },
+        {
+          "name": "constant.numeric.integer.crowny",
+          "match": "-?\\b[0-9]+\\b"
+        }
+      ]
+    },
+    "trit-literals": {
+      "patterns": [
+        {
+          "name": "constant.language.trit.positive.crowny",
+          "match": "\\b(참|P)\\b"
+        },
+        {
+          "name": "constant.language.trit.neutral.crowny",
+          "match": "\\b(모름|O)\\b"
+        },
+        {
+          "name": "constant.language.trit.negative.crowny",
+          "match": "\\b(거짓|T)\\b"
+        }
+      ]
+    },
+    "keywords-kr": {
+      "patterns": [
+        {
+          "name": "keyword.control.crowny",
+          "match": "\\b(만약|아니면|보류|반복|반환|끝|종료)\\b"
+        },
+        {
+          "name": "keyword.declaration.crowny",
+          "match": "\\b(변수|값|함수)\\b"
+        },
+        {
+          "name": "keyword.operator.crowny",
+          "match": "\\b(더|더해|빼|곱|곱해|나눠|나머지|같다|다르다|크다|작다|아니다|그리고)\\b"
+        },
+        {
+          "name": "keyword.other.crowny",
+          "match": "\\b(보여줘|질문해|요약해|번역해|분류해)\\b"
+        }
+      ]
+    },
+    "keywords-en": {
+      "patterns": [
+        {
+          "name": "keyword.control.crowny",
+          "match": "\\b(if|else|neutral|loop|repeat|return|end)\\b"
+        },
+        {
+          "name": "keyword.declaration.crowny",
+          "match": "\\b(var|let|val|func|fn)\\b"
+        },
+        {
+          "name": "keyword.operator.crowny",
+          "match": "\\b(add|sub|mul|div|mod|eq|neq|gt|lt|not|and)\\b"
+        },
+        {
+          "name": "keyword.other.crowny",
+          "match": "\\b(print|ask|llm)\\b"
+        }
+      ]
+    },
+    "operators": {
+      "patterns": [
+        {
+          "name": "keyword.operator.assignment.crowny",
+          "match": "="
+        }
+      ]
+    },
+    "builtins": {
+      "patterns": [
+        {
+          "name": "support.function.crowny",
+          "match": "\\b(넣어|빼내|복사|바꿔|돌려|저장해|불러와|불러|돌아가|가라|만약가라|무시|삼분기|해시|암호화|복호화|캐시읽기|캐시쓰기|로그인|로그아웃|토큰생성|플러그인|WASM로드)\\b"
+        }
+      ]
+    },
+    "functions": {
+      "patterns": [
+        {
+          "name": "entity.name.function.crowny",
+          "match": "(?<=함수\\s|func\\s|fn\\s)[가-힣\\w]+"
+        }
+      ]
+    },
+    "variables": {
+      "patterns": [
+        {
+          "name": "variable.other.crowny",
+          "match": "(?<=변수\\s|var\\s|let\\s)[가-힣\\w]+"
+        }
+      ]
+    }
+  }
+}

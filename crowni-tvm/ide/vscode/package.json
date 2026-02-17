@@ -1,0 +1,117 @@
+{
+  "name": "crowny-lang",
+  "displayName": "Crowny 한선어",
+  "description": "균형3진 한선어 (Crowny WebScript) — 문법 하이라이팅, Trit 시각화, 디버거 연결",
+  "version": "1.0.0",
+  "publisher": "crownin",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": ["Programming Languages", "Debuggers", "Snippets"],
+  "icon": "images/crowny-icon.png",
+  "activationEvents": [
+    "onLanguage:crowny",
+    "onCommand:crowny.run",
+    "onCommand:crowny.compile",
+    "onCommand:crowny.debug"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "languages": [
+      {
+        "id": "crowny",
+        "aliases": ["Crowny", "한선어", "crowny-webscript"],
+        "extensions": [".cws", ".hsn"],
+        "configuration": "./language-configuration.json"
+      }
+    ],
+    "grammars": [
+      {
+        "language": "crowny",
+        "scopeName": "source.crowny",
+        "path": "./syntaxes/crowny.tmLanguage.json"
+      }
+    ],
+    "commands": [
+      {
+        "command": "crowny.run",
+        "title": "Crowny: 실행",
+        "icon": "$(play)"
+      },
+      {
+        "command": "crowny.compile",
+        "title": "Crowny: WASM 컴파일"
+      },
+      {
+        "command": "crowny.bytecode",
+        "title": "Crowny: .크라운 바이트코드 생성"
+      },
+      {
+        "command": "crowny.debug",
+        "title": "Crowny: 디버그 시작"
+      },
+      {
+        "command": "crowny.tritView",
+        "title": "Crowny: Trit 상태 보기"
+      },
+      {
+        "command": "crowny.sectors",
+        "title": "Crowny: 729 Opcode 탐색기"
+      }
+    ],
+    "keybindings": [
+      {
+        "command": "crowny.run",
+        "key": "ctrl+shift+r",
+        "mac": "cmd+shift+r",
+        "when": "editorLangId == crowny"
+      },
+      {
+        "command": "crowny.debug",
+        "key": "f5",
+        "when": "editorLangId == crowny"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "when": "editorLangId == crowny",
+          "command": "crowny.run",
+          "group": "navigation"
+        }
+      ]
+    },
+    "snippets": [
+      {
+        "language": "crowny",
+        "path": "./snippets/crowny.json"
+      }
+    ],
+    "configuration": {
+      "title": "Crowny",
+      "properties": {
+        "crowny.tvmPath": {
+          "type": "string",
+          "default": "crowni-tvm",
+          "description": "crowni-tvm 실행 파일 경로"
+        },
+        "crowny.autoRun": {
+          "type": "boolean",
+          "default": false,
+          "description": "저장 시 자동 실행"
+        },
+        "crowny.tritDisplay": {
+          "type": "string",
+          "default": "korean",
+          "enum": ["korean", "english", "symbol"],
+          "description": "Trit 표시 형식 (참/모름/거짓 | P/O/T | +/0/-)"
+        },
+        "crowny.defaultPort": {
+          "type": "number",
+          "default": 7293,
+          "description": "Crowny 서버 기본 포트"
+        }
+      }
+    }
+  }
+}

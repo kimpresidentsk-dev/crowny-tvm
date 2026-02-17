@@ -1,0 +1,28 @@
+{
+  "comments": {
+    "lineComment": ";",
+    "blockComment": ["/*", "*/"]
+  },
+  "brackets": [
+    ["{", "}"],
+    ["(", ")"]
+  ],
+  "autoClosingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" },
+    { "open": "'", "close": "'" }
+  ],
+  "surroundingPairs": [
+    { "open": "{", "close": "}" },
+    { "open": "(", "close": ")" },
+    { "open": "\"", "close": "\"" }
+  ],
+  "folding": {
+    "markers": {
+      "start": "^\\s*(만약|함수|반복|func|fn|if|loop)\\b.*\\{",
+      "end": "^\\s*\\}"
+    }
+  },
+  "wordPattern": "[가-힣\\w]+"
+}
